@@ -5,6 +5,23 @@ This sample provides:
 - Logout API
 - Healthcheck API with DB connectivity check
 
+## 0) AWS CLI v2 (required for deployment commands)
+
+Install on Ubuntu/Debian:
+
+sudo apt-get update
+sudo apt-get install -y awscli
+aws --version
+
+Version output should start with `aws-cli/2`.
+
+If apt install does not work in your environment, use the official installer:
+
+curl -sS "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip -q awscliv2.zip
+./aws/install --bin-dir $HOME/.local/bin --install-dir $HOME/.local/aws-cli --update
+aws --version
+
 ## 1) Project structure
 
 - app/ - Flask application package
@@ -131,7 +148,7 @@ docker push <account-id>.dkr.ecr.<region>.amazonaws.com/aws-flask-auth:latest
 - Place ECS service in private subnets with NAT (or proper outbound path).
 - Allow ECS task security group to access RDS on port 5432.
 - Use IAM task execution role permission for Secrets Manager reads.
-- Use an ALB for public HTTP access.
+- If not using an ALB, run ECS task with public IP and restrict SG ingress CIDRs tightly.
 
 ## 8) Deploy through GitHub Actions
 
@@ -159,3 +176,8 @@ See full list in:
 Important security note:
 - Keep runtime secrets (DB_HOST, DB_NAME, DB_USER, DB_PASSWORD, SECRET_KEY) in AWS Secrets Manager.
 - Do not store runtime database credentials in GitHub secrets.
+
+## 9) Full AWS ECS + RDS hosting instructions
+
+For end-to-end production hosting steps, see:
+- deploy/AWS_ECS_RDS_DEPLOYMENT.md
