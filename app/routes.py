@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, jsonify, redirect, render_template, request, session, url_for
 from sqlalchemy import text
 
 from .database import db
@@ -28,23 +28,41 @@ def healthcheck():
     )
 
 
-@bp.route("/auth/login", methods=["POST"])
+@bp.route("/auth/login", methods=["GET", "POST"])
 def login():
-    payload = request.get_json(silent=True) or {}
-    username = payload.get("username", "").strip()
-    password = payload.get("password", "")
+    if request.method == "GET":
+        return render_template("login.html")
+
+    is_json = request.is_json
+
+    if is_json:
+        payload = request.get_json(silent=True) or {}
+        username = payload.get("username", "").strip()
+        password = payload.get("password", "")
+    else:
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
 
     if not username or not password:
-        return jsonify({"error": "username and password are required"}), 400
+        if is_json:
+            return jsonify({"error": "username and password are required"}), 400
+
+        return render_template("login.html", error="ID and password are required.", username=username), 400
 
     user = User.query.filter_by(username=username).first()
     if user is None or not user.verify_password(password):
-        return jsonify({"error": "invalid credentials"}), 401
+        if is_json:
+            return jsonify({"error": "invalid credentials"}), 401
+
+        return render_template("login.html", error="Invalid ID or password.", username=username), 401
 
     session["user_id"] = user.id
     session["username"] = user.username
 
-    return jsonify({"message": "login successful", "username": user.username}), 200
+    if is_json:
+        return jsonify({"message": "login successful", "username": user.username}), 200
+
+    return redirect(url_for("api.me"))
 
 
 @bp.route("/auth/logout", methods=["POST"])
