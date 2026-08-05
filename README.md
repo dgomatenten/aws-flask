@@ -31,6 +31,15 @@ This sample provides:
 
    curl http://localhost:8000/health
 
+## 2.1) Create users table manually in PostgreSQL
+
+If you want to create the table using SQL directly:
+
+psql "host=localhost port=5432 dbname=flask_auth user=flask_user password=flask_password" -f db/sql/001_create_users_table.sql
+
+Note:
+- PostgreSQL has a reserved keyword `user`, so this project uses table name `users`.
+
 ## 3) APIs
 
 ### Healthcheck
@@ -55,6 +64,28 @@ This sample provides:
 ### Current Session
 
 - GET /auth/me
+
+## 3.1) Seed default users
+
+Run the seed script:
+
+python seed_default_users.py
+
+Or inside Docker:
+
+docker compose exec api python seed_default_users.py
+
+Default users inserted (if not already present):
+- admin / admin123
+- developer / dev123
+
+You can override using environment variables:
+- DEFAULT_ADMIN_PASSWORD
+- DEFAULT_DEVELOPER_PASSWORD
+
+Or provide custom JSON list:
+
+DEFAULT_USERS_JSON='[{"username":"ops","password":"ops123"},{"username":"qa","password":"qa123"}]' python seed_default_users.py
 
 ## 4) AWS Secrets Manager (production)
 
